@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détails</title>
+
+    <!-- Inclure Materialize CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f5;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            overflow-x: hidden;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Roboto', sans-serif;
+        }
+        .head-block {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 70%;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+        .head-sub {
+            width: 35%;
+            display: flex;
+            flex-direction: column;
+            background-color: #fff;
+            justify-content: center;
+            font-weight: bold;
+            padding: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            height: 120px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        .head-sub p {
+            margin: 0;
+        }
+        .book-genre-block {
+            padding: 16px;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            width: 100%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            margin-bottom: 16px;
+            box-sizing: border-box;
+        }
+        .book-genre-block h4 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: bold;
+            color: rgb(81, 75, 75);
+        }
+        .book-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            
+        }
+        .book-item img {
+            width: 80px;
+            height: auto;
+            margin-right: 15px;
+        }
+        .btn {
+            background-color: rgb(247, 196, 27);
+            color: black;
+            display: block;
+            margin: 16px auto;
+            width: auto;
+        }
+        .books-container{
+            width: 70%;
+            padding: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="head-block">
+        <div id="block1" class="head-sub" style="border-bottom: 3px solid red;">
+            <p style="margin-top: 16px; color: orange;"><img src="../../images/work-in-progress.png" alt="" width="16px" height="16px"> en cours</p>
+        </div>
+        <div id="block2" class="head-sub" style="margin: 0 16px">
+            <p style="margin-top: 16px; color: green;"><img src="../../images/checked.png" alt="" width="16px" height="16px"> Validé</p>
+        </div>
+        <div id="block3" class="head-sub">
+            <p style="margin-top: 16px; color: red;"><img src="../../images/rejected.png" alt="" width="16px" height="16px"> Rejeté</p>
+        </div>
+    </div>
+
+    <div id="books-container" class="books-container">
+        <!-- Les cartes de livres seront injectées ici par JavaScript -->
+        <div class="progress">
+            <div class="indeterminate"></div>
+        </div>
+    </div>
+
+</body>
+    <!-- Firebase and App Scripts -->
+    <script type="module">
+        // Importations Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-app.js";
+        import { getFirestore, collection, query, getDocs, where } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore.js";
+
+        // Configuration Firebase (identique à celle de statistiques.html)
+        const firebaseConfig = {
+            apiKey: "AIzaSyADLk-YUqWpKbyCSsXxk-W5RKl0_pKDy_A",
+            authDomain: "paper-d9ad5.firebaseapp.com",
+            projectId: "paper-d9ad5",
+            storageBucket: "paper-d9ad5.appspot.com",
+            messagingSenderId: "966837266031",
+            appId: "1:966837266031:web:cacecb421f912557210f9a",
+            measurementId: "G-6NYLXR467G"
+        };
+
+        // Initialisation Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Fonction pour récupérer et afficher les livres par genre
+        // Fonction pour récupérer et afficher les livres par genre
+        async function fetchAndDisplayBooksByGenre() {
+    const booksContainer = document.getElementById('books-container');
+    try {
+        // Requête pour ne récupérer que les livres dont l'attribut 'verdict' est égal à 'loading'
+        const q = query(
+            collection(db, 'livres'),
+            where('verdict', '==', 'loading')  // Condition sur l'attribut 'verdict'
+        );
+        const querySnapshot = await getDocs(q);
+
+        // Organiser les livres par genre
+        const booksByGenre = {};
+
+        if (querySnapshot.empty) {
+            // Si aucun livre n'a le verdict 'loading', afficher un message
+            booksContainer.innerHTML = '<p>Aucun livre en attente.</p>';
+            return;
+        }
+
+        querySnapshot.forEach((doc) => {
+            const bookData = doc.data();
+            const genre = bookData.genre || 'Inconnu';
+
+            if (!booksByGenre[genre]) {
+                booksByGenre[genre] = [];
+            }
+
+            booksByGenre[genre].push({ id: doc.id, ...bookData }); // Stocke aussi l'ID du document
+        });
+
+        // Vider le contenu précédent
+        booksContainer.innerHTML = '';
+
+        // Afficher les livres par genre
+        for (const [genre, books] of Object.entries(booksByGenre)) {
+            const genreBlock = document.createElement('div');
+            genreBlock.classList.add('book-genre-block');
+
+            genreBlock.innerHTML = `<h4>${genre}</h4>`;
+
+            books.forEach((book) => {
+                const bookItem = document.createElement('div');
+                bookItem.classList.add('book-item');
+
+                bookItem.innerHTML = `
+                    <img src="${book.coverUrl || 'https://via.placeholder.com/80x100?text=Pas+d%27image'}" alt="${book.name}">
+                `;
+
+                // Ajouter un écouteur d'événement pour la redirection lors du clic sur l'image
+                bookItem.addEventListener('click', () => {
+                    // Stocker l'objet du livre dans le localStorage
+                    localStorage.setItem('selectedBook', JSON.stringify(book));
+                    // Redirection vers la page des détails du livre
+                    window.location.href = 'verifyBook/detailsLivreStruct.html';
+                });
+
+                genreBlock.appendChild(bookItem);
+            });
+
+            booksContainer.appendChild(genreBlock);
+        }
+
+    } catch (error) {
+        console.error('Erreur lors de la récupération des livres:', error);
+        booksContainer.innerHTML = '<p>Une erreur est survenue lors du chargement des livres.</p>';
+    }
+}
+
+
+// Appel de la fonction au chargement de la page
+window.addEventListener('DOMContentLoaded', fetchAndDisplayBooksByGenre);
+
+
+        // Appel de la fonction au chargement de la page
+        window.addEventListener('DOMContentLoaded', fetchAndDisplayBooksByGenre);
+
+        document.getElementById("block2").addEventListener("click", function() {
+            window.location.href = "livres2.html";
+        });
+        document.getElementById("block3").addEventListener("click", function() {
+            window.location.href = "livres3.html";
+        });
+    </script>
+</html>

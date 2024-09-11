@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détails</title>
+
+    <!-- Inclure Materialize CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f5; 
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            overflow-x: hidden;
+            overflow-y: auto; /* Activer le défilement vertical */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Roboto', sans-serif; /* Materialize utilise la police Roboto */
+        }
+        .head-block {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 70%;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+        .head-sub {
+            width: 35%;
+            display: flex;
+            flex-direction: column;
+            background-color: #fff;
+            justify-content: center;
+            font-weight: bold;
+            padding: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            height: 120px;
+            font-size: 11px;
+            cursor: pointer; /* Changer le curseur pour indiquer que c'est cliquable */
+        }
+        .head-sub p {
+            margin: 0;
+        }
+        .body-block {
+            padding: 16px;
+            display: flex;
+            width: 67.5%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            margin-bottom: 16px; /* Ajout d'une marge pour séparer les blocs */
+            box-sizing: border-box;
+            height: 200px;
+        }
+        .body-block p {
+            margin: 0 0 8px 0;
+        }
+        .body-block input {
+            width: 100%;
+            margin-bottom: 16px;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .description textarea {
+            height: 150px;
+            resize: none;
+        }
+        #edit-episode-pdf-upload {
+            display: none;
+        }
+        #edit-episode-img-upload {
+            display: none;
+        }
+        .custom-file-upload {
+            display: inline-block;
+            padding: 8px 20px;
+            cursor: pointer;
+            background-color: rgb(247, 196, 27);
+            color: #000;
+            font-size: 11px;
+            border-radius: 4px;
+            font-family: Arial, sans-serif;
+        }
+        .custom-file-upload:hover {
+            background-color: #d5c336;
+        }
+        .validated {
+            display: flex;
+            padding: 8px;
+            border: 1px solid green;
+            border-radius: 8px;
+            margin-top: 8px;
+            border-left: 4px solid green;
+        }
+        .validatedImg {
+            flex: 0.8;
+        }
+        .book-cover-info {
+            display: flex;
+            padding: 16px;
+        }
+        #pdf-preview {
+            width: 100%;
+            height: 100%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        #pdf-preview iframe {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="head-block">
+        <div id="block1" class="head-sub">
+            <p style="font-size: 14px;color: rgb(44, 44, 151);">Informations relatives à l'ebook papers</p>
+            <p style="margin-top: 16px; color: green;">
+                <img src="../../../images/checked.png" alt="" width="16px" height="16px"> finalisé
+            </p>
+        </div>
+        <div id="block2" class="head-sub" style="margin: 0 16px;border-bottom: 3px solid red;">
+            <p style="font-size: 14px;">Contenu de l'ebook papers</p>
+            <p style="margin-top: 16px; color: green;">
+                <img src="../../../images/checked.png" alt="" width="16px" height="16px"> finalisé
+            </p>
+        </div>
+        <div id="block3" class="head-sub">
+            <p style="font-size: 14px;color: rgb(44, 44, 151);">Prix de l'ebook papers</p>
+            <p style="margin-top: 16px; color: green;">
+                <img src="../../../images/checked.png" alt="" width="16px" height="16px"> finalisé
+            </p>
+        </div>
+    </div>
+
+    <div class="body-block" >
+        <div style="flex: 0.2;">
+            <p style="font-size: 16px;font-weight: bold;color: rgb(81, 75, 75);">Manuscrit</p>
+        </div>
+        <div style="flex: 0.8;">
+            <p style="font-size: 11px;">
+                Téléchargez votre manuscrit (C'est-à-dire le contenu intérieur de votre livre).
+                Nous vous recommandons d'utiliser un fichier PDF 
+                <span style="color: rgb(44, 44, 151); font-size: 11px;">
+                    Lignes directrices relatives au titre du livre
+                </span>
+            </p>
+        
+            <input type="file" id="edit-episode-pdf-upload" accept="application/pdf" onchange="updatePdfLink(this)" disabled>
+            
+            <label for="edit-episode-pdf-upload" class="custom-file-upload">
+                Téléchargez votre manuscrit
+            </label>
+        
+            <div id="validated" class="validated" style="display: none;">
+                <img src="../../../images/checked.png" alt="Vérifié" width="16px" height="16px">
+                <p id="upload-message" style="font-size: 11px;">
+                    Le chargement du livre <<...>> a été effectué
+                </p>
+            </div>
+        
+        </div>
+    </div>
+
+    <div class="body-block" style="height: 400px;">
+        <div style="flex: 0.2;">
+            <p style="font-size: 16px;font-weight: bold;color: rgb(81, 75, 75);">Previsualisation</p>
+        </div>
+        <div style="flex: 0.8;">
+            <p style="font-size: 11px;">
+                Vérifiez que ce fichier est bien celui que vous souhaitez publier en le prévisualisant.
+                <span style="color: rgb(44, 44, 151); font-size: 11px;">
+                    Prévisualisation
+                </span>
+            </p>
+            
+            <div id="pdf-preview" style="height: 300px;display: flex;justify-content: center;align-items: center;">
+                <!-- La prévisualisation du PDF apparaîtra ici -->
+            </div>
+        </div>
+    </div>
+
+    <div class="body-block">
+        <div style="flex: 0.2;">
+            <p style="font-size: 16px;font-weight: bold;color: rgb(81, 75, 75);">Couverture de l'ebook papers</p>
+        </div>
+        <div style="flex: 0.8;">
+            <p style="font-size: 11px;">
+                Téléchargez la couverture de votre livre.
+                <span style="color: rgb(44, 44, 151); font-size: 11px;">
+                    Spécifications relatives à la couverture
+                </span>
+            </p>
+            <div class="book-cover-info">
+                <div id="img-cover" class="img-cover" style="flex: 0.1; margin-right: 10px;">
+                    <!-- L'aperçu de l'image apparaîtra ici -->
+                </div>
+                <div class="validatedImg">
+                    <input type="file" id="edit-episode-img-upload" accept="image/*" onchange="updateImgLink(this)" disabled>
+                    
+                    <label for="edit-episode-img-upload" class="custom-file-upload">
+                        Rechercher
+                    </label>
+                    
+                    <div id="validatedImg" class="validated" style="display: none;">
+                        <img src="../../../images/checked.png" alt="Vérifié" width="16px" height="16px">
+                        <p id="upload-message-img" style="font-size: 11px;">
+                            Couverture chargée
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;width: 67.5%;cursor: pointer;">
+        <p style="padding:4px;border-radius:4px;font-size: 11px;background-color: #fff;width: 150px;text-align: center;" class="gestion" id="section1">
+            < Retour aux informations
+        </p>
+        <p style="padding:4px;border-radius:4px;font-size: 11px;background-color: rgb(247, 196, 27);width: 150px;text-align: center;" id="section3">
+            Suivant
+        </p>
+    </div>
+
+    <!-- Inclure Materialize JavaScript (optionnel, si vous avez des composants interactifs) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+    <script>
+        let selectedBook = JSON.parse(localStorage.getItem("selectedBook")) || {};
+
+// Fonction pour mettre à jour le lien PDF et stocker dans selectedBook
+function updatePdfLink(input) {
+    const file = input.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            selectedBook.pdfUrl = e.target.result; // Mise à jour de selectedBook
+            localStorage.setItem('selectedBook', JSON.stringify(selectedBook)); // Mise à jour du localStorage
+
+            document.getElementById("validated").style.display = 'flex';
+            document.getElementById("upload-message").innerText = `Le fichier ${file.name} a été téléchargé`;
+
+            // Mettre à jour la prévisualisation du PDF
+            const pdfPreview = document.getElementById('pdf-preview');
+            pdfPreview.innerHTML = `<iframe src="${selectedBook.pdfUrl}" frameborder="0"></iframe>`;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// Fonction pour mettre à jour le lien de l'image et stocker dans selectedBook
+function updateImgLink(input) {
+    const file = input.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            selectedBook.coverUrl = e.target.result; // Mise à jour de selectedBook
+            localStorage.setItem('selectedBook', JSON.stringify(selectedBook)); // Mise à jour du localStorage
+
+            const img = document.createElement('img');
+            img.src = selectedBook.coverUrl;
+            img.style.width = '100%'; // Ajustez si nécessaire
+            img.style.height = 'auto'; // Ajustez si nécessaire
+            document.getElementById("img-cover").innerHTML = '';
+            document.getElementById("img-cover").appendChild(img);
+            document.getElementById("validatedImg").style.display = 'flex';
+            document.getElementById("upload-message-img").innerText = `Couverture chargée`;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// Charger les données stockées dans le stockage local au chargement de la page
+window.onload = function() {
+    const pdfData = selectedBook.pdfUrl;
+    const imgData = selectedBook.coverUrl;
+    
+    if (pdfData) {
+        document.getElementById("validated").style.display = 'flex';
+        document.getElementById("upload-message").innerText = 'Le fichier PDF précédemment téléchargé est disponible';
+
+        // Mettre à jour la prévisualisation du PDF
+        const pdfPreview = document.getElementById('pdf-preview');
+        pdfPreview.innerHTML = `<iframe src="${pdfData}" frameborder="0" style="height:500px"></iframe>`;
+    }
+
+    if (imgData) {
+        const img = document.createElement('img');
+        img.src = imgData;
+        img.style.width = '100%'; // Ajustez si nécessaire
+        img.style.height = 'auto'; // Ajustez si nécessaire
+        document.getElementById("img-cover").innerHTML = '';
+        document.getElementById("img-cover").appendChild(img);
+        document.getElementById("validatedImg").style.display = 'flex';
+        document.getElementById("upload-message-img").innerText = 'Couverture chargée';
+    }
+};
+
+document.getElementById("section1").addEventListener("click", function() {
+    window.location.href = "detailsLivreStruct.html";
+});
+document.getElementById("section3").addEventListener("click", function() {
+    window.location.href = "detailsLivreStruct3.html";
+});
+document.getElementById("block1").addEventListener("click", function() {
+    window.location.href = "detailsLivreStruct.html";
+});
+document.getElementById("block3").addEventListener("click", function() {
+    window.location.href = "detailsLivreStruct3.html";
+});
+
+    </script>
+</body>
+</html>

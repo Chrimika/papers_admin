@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajouter une Collection</title>
+    <!-- Material Design CDN -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <h3 class="center-align">Ajouter une Collection</h3>
+        <form id="collectionForm">
+            <div class="row">
+                <div class="col s12 m6">
+                    <div class="input-field">
+                        <input id="collectionName" type="text" class="validate">
+                        <label for="collectionName">Nom de la Collection</label>
+                    </div>
+                    <div class="file-field input-field">
+                        <div class="btn">
+                            <span>Image de Couverture</span>
+                            <input id="collectionCover" type="file" accept="image/*">
+                        </div>
+                        <div class="file-path-wrapper">
+                            <input class="file-path validate" type="text" placeholder="Télécharger l'image de couverture">
+                        </div>
+                    </div>
+                </div>
+                <div class="col s12 m6">
+                    <p>Sélectionner les livres à inclure dans la collection :</p>
+                    <div id="bookCheckboxes"></div>
+                </div>
+            </div>
+            <div class="center-align">
+                <button class="btn waves-effect waves-light" type="submit">Créer la Collection</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Materialize JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+        import { getFirestore, doc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+        import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyADLk-YUqWpKbyCSsXxk-W5RKl0_pKDy_A",
+            authDomain: "paper-d9ad5.firebaseapp.com",
+            projectId: "paper-d9ad5",
+            storageBucket: "paper-d9ad5.appspot.com",
+            messagingSenderId: "966837266031",
+            appId: "1:966837266031:web:cacecb421f912557210f9a",
+            measurementId: "G-6NYLXR467G"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const booksRef = collection(db, 'livres');
+            const booksSnapshot = await getDocs(booksRef);
+            const bookCheckboxes = document.getElementById('bookCheckboxes');
+
+            booksSnapshot.forEach((doc) => {
+                const bookId = doc.id;
+                const bookName = doc.data().name; // Utilise le nom pour l'affichage
+                const checkboxHtml = `
+                    <p>
+                        <label>
+                            <input type="checkbox" class="filled-in" value="${bookId}" />
+                            <span>${bookName}</span> <!-- Affiche le nom -->
+                        </label>
+                    </p>
+                `;
+                bookCheckboxes.insertAdjacentHTML('beforeend', checkboxHtml);
+            });
+        });
+
+        document.getElementById('collectionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const collectionName = document.getElementById('collectionName').value;
+            const coverImage = document.getElementById('collectionCover').files[0];
+            const selectedBooks = Array.from(document.querySelectorAll('#bookCheckboxes input[type="checkbox"]:checked')).map(checkbox => checkbox.value);
+
+            if (collectionName && coverImage && selectedBooks.length > 0) {
+                const coverRef = ref(storage, `covers/${coverImage.name}`);
+                const coverData = await coverImage.arrayBuffer();
+                await uploadString(coverRef, btoa(String.fromCharCode(...new Uint8Array(coverData))), 'base64', { contentType: coverImage.type });
+
+                const coverUrl = await getDownloadURL(coverRef);
+
+                const collectionData = {
+                    nom: collectionName,
+                    cover_img: coverUrl,
+                    livres: selectedBooks, // Utilise les IDs des livres pour l'enregistrement
+                };
+
+                try {
+                    await setDoc(doc(db, 'collections', collectionName), collectionData);
+                    alert('Collection ajoutée avec succès !');
+                } catch (error) {
+                    console.error('Erreur lors de l\'ajout de la collection à Firestore :', error);
+                }
+            } else {
+                alert('Veuillez remplir tous les champs requis.');
+            }
+        });
+    </script>
+</body>
+
+</html>

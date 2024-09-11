@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajouter un Auteur</title>
+    <!-- Material Design CDN -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <h3 class="center-align">Ajouter un Auteur</h3>
+        <form id="authorForm">
+            <div class="row">
+                <div class="col s12 m6">
+                    <div class="input-field">
+                        <input id="name" type="text" class="validate" required>
+                        <label for="name">Nom et Prénom</label>
+                    </div>
+                    <div class="input-field">
+                        <input id="password" type="password" class="validate" required>
+                        <label for="password">Mot de Passe</label>
+                    </div>
+                </div>
+            </div>
+            <div class="center-align">
+                <button class="btn waves-effect waves-light" type="submit">Ajouter l'Auteur</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Materialize JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyADLk-YUqWpKbyCSsXxk-W5RKl0_pKDy_A",
+            authDomain: "paper-d9ad5.firebaseapp.com",
+            projectId: "paper-d9ad5",
+            storageBucket: "paper-d9ad5.appspot.com",
+            messagingSenderId: "966837266031",
+            appId: "1:966837266031:web:cacecb421f912557210f9a",
+            measurementId: "G-6NYLXR467G"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        document.getElementById('authorForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const password = document.getElementById('password').value;
+
+            if (name && password) {
+                const authorRef = doc(db, 'auteurs', name);
+                const authorData = {
+                    id: authorRef.id, // Ajout de l'ID du document
+                    adresse: '',
+                    masterclass: '',
+                    metier: '',
+                    nationalite: '',
+                    nbrLivres: 0,
+                    NomPrenom: name,
+                    refPayement: '',
+                    tel: '',
+                    bio: '',
+                    photo: '',
+                    password: password // Ajout du mot de passe dans la base de données
+                };
+
+                try {
+                    await setDoc(authorRef, authorData);
+                    alert('Auteur ajouté avec succès !');
+                } catch (error) {
+                    console.error('Erreur lors de l\'ajout de l\'auteur à Firestore :', error);
+                }
+            } else {
+                alert('Veuillez remplir tous les champs requis.');
+            }
+        });
+    </script>
+</body>
+
+</html>
